@@ -9,5 +9,16 @@ def compiler(blueprint):
     for model in nested_key(blueprint,["models"],default={}):
         new_model = Model(model,blueprint["models"][model])
         models.append(new_model)
-        model, new_imps = new_model.render()
+    models_printer(models)
+def models_printer(models):
+    rendered_models = []
+    imports = []
+    for model in models:
+        new_model, new_imps = model.render()
+        rendered_models.append(new_model)
+        imports.extend(new_imps)
+    
+    print("\n".join(imports))
+    for model in rendered_models:
         print("\n".join(model))
+

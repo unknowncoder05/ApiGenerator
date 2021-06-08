@@ -27,7 +27,7 @@ class Model:
         return lines, imports
 TEMPLATES = {
     "USER":{
-        "name":Field("name", {"type":"str","min":5,"max":20}),
-        "password":Field("name", {"type":"psw","min":5,"max":20})
+        "name":Field("name", {"type":"str", "min":5, "max":20, "required":True}),
+        "password":Field("password", {"type":"psw", "min":8, "max":50, "required":True})
     }
 }

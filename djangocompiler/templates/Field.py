@@ -6,14 +6,19 @@ class Field:
         self.name = name
         self.type = get_type(attrs["type"])
     def render(self, indentation) -> list:
-        string_attrs = ""
+        string_attrs = []
         imports = []
         if "max" in self.attrs:
             field,new_imps = min_max_field(self.attrs)
             imports.extend(new_imps)
-            string_attrs += field
+            if field != "":
+                string_attrs.append(field)
+        if "required" in self.attrs and self.attrs["required"] == True:
+            string_attrs.append("blank=False")
+        else:
+            string_attrs.append("blank=True")
         lines = [
-            "\t"*indentation+ f"{self.name} = models.{self.type}({string_attrs})"
+            "\t"*indentation+ f"{self.name} = models.{self.type}({', '.join(string_attrs)})"
         ]
         return lines, imports
 def get_type(raw_type):
@@ -23,17 +28,24 @@ def get_type(raw_type):
 def min_max_field(attrs):
     res = ""
     imps = []
-    if attrs["type"] == "string":
-        if "max" in attrs:
-            res+=f"max_length={attrs['max']}"
-        if "min" in attrs:
-            res+=f"min_length={attrs['min']}"
-    elif attrs["type"] in ["int","float"]:
-        imps.append("from django.core.validators import MaxValueValidator, MinValueValidator")
+    if attrs["type"] in ["str", "psw"]:
         aux = []
         if "min" in attrs:
+           aux.append(f"min_length={attrs['min']}")
+        if "max" in attrs:
+            aux.append(f"max_length={attrs['max']}")
+        res = ', '.join(aux)
+    elif attrs["type"] in ["int","float"]:
+        aux = []
+        if "min" in attrs:
+            imps.extend([
+            "from django.core.validators import MinValueValidator"
+            ])
             aux.append(f"MinValueValidator({attrs['min']})")
         if "max" in attrs:
+            imps.extend([
+            "from django.core.validators import MaxValueValidator"
+            ])
             aux.append(f"MaxValueValidator({attrs['max']})")
         res = "validators=["+', '.join(aux)+"]"
     return res, imps
