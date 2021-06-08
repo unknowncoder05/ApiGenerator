@@ -2,10 +2,11 @@ from .Field import Field
 class Model:
     fields = {}
     name = None
+    imports = []
     def __init__(self, name, raw_model) -> None:
         self.name = name
         if '__extends' in raw_model:
-            self.fields = raw_model['__extends']
+            self.fields = TEMPLATES[raw_model['__extends']]
         for field in raw_model:
             if not field.startswith("__"):
                 self.add_field(field,raw_model[field])
@@ -16,15 +17,17 @@ class Model:
         lines = [
             f"class {self.name.title()}:"
         ]
+        imports = self.imports
         for field in self.fields:
-            lines.extend(field.render(indentation=1))
-        lines.extend([
-            ""
-        ])
-        return lines
+            new_field,imps = self.fields[field].render(indentation=1)
+            imports.extend(imps)
+            lines.extend(new_field)
+        #lines.extend([
+        #])
+        return lines, imports
 TEMPLATES = {
     "USER":{
-        "name":Field("name", {"type":"string","min":5,"max":20}),
-        "password":Field("name", {"type":"password","min":5,"max":20})
+        "name":Field("name", {"type":"str","min":5,"max":20}),
+        "password":Field("name", {"type":"psw","min":5,"max":20})
     }
 }

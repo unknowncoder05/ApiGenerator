@@ -1,3 +1,3 @@
 # I whant this API!
-import App
+from App import App
 app = App("app.json")

@@ -1,7 +1,7 @@
 {
     "settings": {
         "name": "epic_app",
-        "framework": "python/django"
+        "framework": "python/django-rest"
     },
     "database": [{
         "type": "POSTGRES",
@@ -18,9 +18,10 @@
             "__db": "maindb"
         },
         "movie": {
-            "title": { "type": "string", "min": 4, "max": 20, "required": true },
-            "description": { "type": "string", "min": 30, "max": 200 },
-            "duration": { "type": "time", "min": 900, "max": 2400, "required": true },
+            "title": { "type": "str", "min": 4, "max": 20, "required": true },
+            "year": { "type": "int", "min": 1900, "max": 3000 },
+            "description": { "type": "str", "min": 30, "max": 200 },
+            "duration": { "type": "datetime", "min": 900, "max": 2400, "required": true },
             "__actions": {
                 "public": ["list", "get"],
                 "authenticated": ["list", "get"],
