@@ -1,40 +1,30 @@
 pass a json file as input and get a formal functional and secure api
 
 
-```json
-{
-    "settings": {
-        "name": "epic_app",
-        "framework": "python/django"
-    },
-    "database": [{
-        "type": "POSTGRES",
-        "identifier": "maindb",
-        "__host": "DB_HOST",
-        "__password": "DB_PASSWORD",
-        "__db": "DB_DB",
-        "__user": "DB_USERS"
+the json file should contain the following properties
+**settings(required)**
+recives an object with the general information about the project
 
-    }],
-    "models": {
-        "user": {
-            "__extends": "USER",
-            "__db": "maindb"
-        },
-        "movie": {
-            "title": { "type": "string", "min": 4, "max": 20, "required": true },
-            "description": { "type": "string", "min": 30, "max": 200 },
-            "duration": { "type": "time", "min": 900, "max": 2400, "required": true },
-            "__actions": {
-                "public": ["list", "get"],
-                "authenticated": ["list", "get"],
-                "owner": ["all"]
-            },
-            "__db": "maindb"
-        }
-    },
-    "deploy": {
-        "far": "far future"
-    }
-}
-```
+- name(required)
+  string with the name of the project wich will be use in multiple places around the code, should not contain strange characters
+- framework(required)
+  the frame work that will be used for the project
+  currently supported frameworks are presented here:
+  - python/django-rest
+  
+  future frameworks are presented here:
+  - python/flask
+  - nodejs/express
+  - nodejs/nest
+**database(required)**
+recives an array of object with the specifications of the DataBase(ses) that will be used for the project
+- type(required)
+  the DB motor that will be used
+  currently supported types are presented here:
+  - air
+  future frameworks are presented here:
+  - postgres
+  - mongodb
+  - mysql
+  - sqlite
+  - redis

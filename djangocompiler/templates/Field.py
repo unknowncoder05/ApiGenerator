@@ -5,6 +5,8 @@ class Field:
         self.attrs = attrs
         self.name = name
         self.type = get_type(attrs["type"])
+    def __str__(self) -> str:
+        return f"{self.name} {self.type}"
     def render(self, indentation) -> list:
         string_attrs = []
         imports = []
