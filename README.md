@@ -28,3 +28,12 @@ recives an array of object with the specifications of the DataBase(ses) that wil
   - mysql
   - sqlite
   - redis
+  
+**models(required)**
+**DJANGO MODEL DOCS**
+- on_delete
+  any of the vales at
+  https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.on_delete
+```json
+  "on_delete": "CASCADE"
+```

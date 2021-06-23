@@ -5,12 +5,19 @@ class Field:
         self.attrs = attrs
         self.name = name
         self.type = get_type(attrs["type"])
+        self.rawtype = attrs["type"]
     def __str__(self) -> str:
         return f"{self.name} {self.type}"
     def render(self, indentation) -> list:
         string_attrs = []
         imports = []
-        if "max" in self.attrs:
+        if self.attrs["type"] in ["foreign"]:
+            string_attrs.append(self.attrs['model'])
+            string_attrs.append(f"on_delete=models.{self.attrs.get('on_delete','CASCADE')}")# HACK: some validation of valid inputs based on the docs
+            #on_delete=models.CASCADE
+            #related_name = "main_coin",
+            #default=func
+        if  self.rawtype in ["str", "psw", "int","float"]:
             field,new_imps = min_max_field(self.attrs)
             imports.extend(new_imps)
             if field != "":
@@ -50,6 +57,7 @@ def min_max_field(attrs):
             ])
             aux.append(f"MaxValueValidator({attrs['max']})")
         res = "validators=["+', '.join(aux)+"]"
+        
     return res, imps
 TYPES = {
     "str":"CharField",
@@ -57,4 +65,5 @@ TYPES = {
     "psw":"CharField",
     "datetime":"DateTimeField",
     "date":"DateField",
+    "foreign":"ForeignKey"
 }

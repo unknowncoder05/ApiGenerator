@@ -16,7 +16,9 @@ def models_printer(models):
     for model in models:
         new_model, new_imps = model.render()
         rendered_models.append(new_model)
-        imports.extend(new_imps)
+        for import_line in new_imps:
+            if import_line not in imports:
+                imports.append(import_line)
     
     print("\n".join(imports))
     for model in rendered_models:
