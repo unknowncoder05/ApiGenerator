@@ -1,15 +1,18 @@
 {
     "settings": {
         "name": "epic_app",
-        "framework": "python/django-rest"
+        "framework": "python/django-rest",
+        "deployment_env":"ENV",
+        "DEV":{
+        }
     },
     "database": [{
-        "type": "POSTGRES",
+        "type": "postgres",
         "identifier": "maindb",
-        "__host": "DB_HOST",
+        "__host": "DB_HOSTNAME",
         "__password": "DB_PASSWORD",
-        "__db": "DB_DB",
-        "__user": "DB_USERS"
+        "__db": "DB_NAME",
+        "__user": "DB_USERNAME"
 
     }],
     "models": {
