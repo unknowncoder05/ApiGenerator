@@ -18,6 +18,7 @@
     "models": {
         "user": {
             "__extends": "USER",
+            "__main_user":true,
             "__db": "maindb"
         },
         "movie": {

@@ -4,6 +4,7 @@ class Model:
     name = None
     verbose_name = None
     verbose_name_plural = None
+    is_user = False
 
     model_class = "models.Model"
     imports = [
@@ -11,16 +12,20 @@ class Model:
     ]
     def __init__(self, name, raw_model) -> None:
         self.name = name
-        properties = {}
+        self.properties = {}
         if '__extends' in raw_model:
-            properties = TEMPLATES[raw_model['__extends']].copy()
-        properties.update(raw_model)
-        self.verbose_name = properties["__verbose_name"] if "__verbose_name" in properties else name
-        self.verbose_name_plural = properties["__verbose_name_plural"] if "__verbose_name_plural" in properties else self.verbose_name
+            self.properties = TEMPLATES[raw_model['__extends']].copy()
+            if "USER" == raw_model['__extends']:
+                self.is_user = True
+                self.imports = ["from django.contrib.auth.models import AbstractUser"]
+                self.model_class = "AbstractUser"
+        self.properties.update(raw_model)
+        self.verbose_name = self.properties["__verbose_name"] if "__verbose_name" in self.properties else name
+        self.verbose_name_plural = self.properties["__verbose_name_plural"] if "__verbose_name_plural" in self.properties else self.verbose_name
         self.fields = {}
-        for field in properties:
+        for field in self.properties:
             if not field.startswith("__"):
-                self.add_field(field,properties[field])
+                self.add_field(field,self.properties[field])
     def add_field(self, name, field) -> None:
         new_field = Field(name, field)
         self.fields[name] = new_field
@@ -33,6 +38,10 @@ class Model:
             new_field,imps = self.fields[field].render(indentation=1)
             imports.extend(imps)
             lines.extend(new_field)
+        if self.is_user:
+            lines.extend([
+                "\t"*1+ f"USERNAME_FIELD = '{self.properties['__USERNAME_FIELD']}'",
+            ])
         lines.extend([
             "\t"*1+"class Meta:",
             #"\t"+"ordering = ['name']",
@@ -46,5 +55,6 @@ TEMPLATES = {
         "password":{"type":"psw", "min":8, "max":50, "required":True},
         "__verbose_name":"user",
         "__verbose_name_plural":"users",
+        "__USERNAME_FIELD":"email"
     }
 }
