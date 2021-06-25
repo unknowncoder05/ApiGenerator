@@ -12,10 +12,27 @@ def compiler(blueprint):
         new_model = Model(model,blueprint["models"][model])
         models.append(new_model)
     model_lines = render_models(models)
+    view_lines = render_modelviews(models)
 
     settings_lines = render_settings(blueprint)
-    print("\n".join(model_lines))
-    print(settings_lines)
+    #print("\n".join(model_lines))
+    print("\n".join(view_lines))
+    #print(settings_lines)
+def render_modelviews(models):
+    rendered_views = []
+    imports = []
+    for model in models:
+        new_view, new_imps=model.views.render()
+        rendered_views.append(new_view)
+        for import_line in new_imps:
+            if import_line not in imports:
+                imports.append(import_line)
+    lines = []
+    lines.extend(imports)
+    for view in rendered_views:
+        lines.append("")
+        lines.extend(view)
+    return lines
 def render_models(models):
     rendered_models = []
     imports = []

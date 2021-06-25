@@ -1,7 +1,10 @@
 from .Field import Field
+from .ModelViews import ModelViews
+from .ModelSerializer import ModelSerializer
 class Model:
     fields = None
     name = None
+    views = None
     verbose_name = None
     verbose_name_plural = None
     is_user = False
@@ -23,6 +26,8 @@ class Model:
         self.verbose_name = self.properties["__verbose_name"] if "__verbose_name" in self.properties else name
         self.verbose_name_plural = self.properties["__verbose_name_plural"] if "__verbose_name_plural" in self.properties else self.verbose_name
         self.fields = {}
+        self.views = ModelViews(self)
+        self.serializer = ModelSerializer(self)
         for field in self.properties:
             if not field.startswith("__"):
                 self.add_field(field,self.properties[field])

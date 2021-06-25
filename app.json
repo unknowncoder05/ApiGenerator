@@ -16,21 +16,21 @@
 
     }],
     "models": {
-        "user": {
+        "User": {
             "__extends": "USER",
             "__main_user":true,
             "__db": "maindb"
         },
-        "movie": {
+        "Movie": {
             "owner": { "type": "foreign", "model":"user", "required": true},
             "title": { "type": "str", "min": 4, "max": 20, "required": true },
             "year": { "type": "int", "min": 1900, "max": 3000 },
             "description": { "type": "str", "min": 30, "max": 200 },
             "duration": { "type": "datetime", "min": 900, "max": 2400, "required": true },
             "__actions": {
-                "public": ["list", "get"],
-                "authenticated": ["list", "get"],
-                "owner": ["all"]
+                "list":"public",
+                "get":"public",
+                "all":"owner"
             },
             "__db": "maindb"
         }
