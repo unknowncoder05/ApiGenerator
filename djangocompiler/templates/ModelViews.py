@@ -39,7 +39,7 @@ class ModelViews:
         ]
         imports = [
             f"from .models import {self.model.name}",
-            f"from .serializers import {self.model.serializer}",
+            f"from .serializers import {self.model.serializer.name}",
             "from rest_framework import viewsets"
         ]
         to_render = {}
@@ -66,9 +66,35 @@ class ModelViews:
                     imports.append("from django.shortcuts import get_object_or_404")
                     lines.extend([
                         "\t"*1+ "def retrieve(self, request):",
+                        "\t"*2+ "queryset = self.model_class.objects.all()",
                         "\t"*2+ "object = get_object_or_404(queryset, pk=pk)",
                         "\t"*2+ "serializer = self.serializer_class(object)",
                         "\t"*2+ "return Response(serializer.data)",
+                    ])
+                if action == "create":
+                    lines.extend([
+                        "\t"*1+ "def create(self, request):",
+                        "\t"*2+ "serializer = self.serializer_class(data=request.data)",
+                        "\t"*2+ "serializer.is_valid(raise_exception=True)",
+                        "\t"*2+ "serializer.save()",
+                        "\t"*2+ "return Response(serializer.data)",
+                    ])
+                if action == "update":
+                    imports.append("from rest_framework import status")
+                    lines.extend([
+                        "\t"*1+ "def update(self, request):",
+                        "\t"*2+ "instance = self.model_class(data=request.data)",#GET OBJECT
+                        "\t"*2+ "serializer = self.get_serializer(instance, data=request.data, partial=partial)",
+                        "\t"*2+ "serializer.is_valid(raise_exception=True)return Response(status=status.HTTP_204_NO_CONTENT)",
+                        "\t"*2+ "return Response(status=status.HTTP_204_NO_CONTENT)",
+                    ])
+                if action == "destroy":
+                    imports.append("from rest_framework import status")
+                    lines.extend([
+                        "\t"*1+ "def destroy(self, request):",
+                        "\t"*2+ "instance = self.model_class(data=request.data)",#GET OBJECT
+                        "\t"*2+ "instance.delete()",
+                        "\t"*2+ "return Response(status=status.HTTP_204_NO_CONTENT)",
                     ])
             #if action == "list":
         return lines, imports
