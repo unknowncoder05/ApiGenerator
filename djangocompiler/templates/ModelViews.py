@@ -5,33 +5,74 @@ PERMISSION_LEVELS = [
     "owner",
     "admin"
 ]
-ACTIONS = [
-    "list",
-    "get",
-    "write",
-    "update"
-    "delete",
-    "all"
-]
-render_template="""
-class UserViewSet(viewsets.ViewSet):
-    def list(self, request):
-        queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
-"""
+TAB = "\t"
+ACTIONS = {
+    "list":{
+        "imports":[],
+        "lines":[
+            "def list(self, request):",
+            TAB*1+ "queryset = self.model_class.objects.all()",
+            TAB*1+ "serializer = self.serializer_class(queryset, many=True)",
+            TAB*1+ "return Response(serializer.data)",
+        ]
+        },
+    "get":{
+        "imports":["from django.shortcuts import get_object_or_404"],
+        "lines":[
+            "def retrieve(self, request):",
+            TAB*1+ "queryset = self.model_class.objects.all()",
+            TAB*1+ "object = get_object_or_404(queryset, pk=pk)",
+            TAB*1+ "serializer = self.serializer_class(object)",
+            TAB*1+ "return Response(serializer.data)",
+        ]
+    },
+    "write":{
+        "imports":[],
+        "lines":[
+            "def create(self, request):",
+            TAB*1+ "serializer = self.serializer_class(data=request.data)",
+            TAB*1+ "serializer.is_valid(raise_exception=True)",
+            TAB*1+ "serializer.save()",
+            TAB*1+ "return Response(serializer.data)",
+        ]
+    },
+    "update":{
+        "imports":["from rest_framework import status"],
+        "lines":[
+            "def update(self, request):",
+            TAB*1+ "instance = self.model_class(data=request.data)",
+            TAB*1+ "serializer = self.get_serializer(instance, data=request.data, partial=partial)",
+            TAB*1+ "serializer.is_valid(raise_exception=True)return Response(status=status.HTTP_204_NO_CONTENT)",
+            TAB*1+ "return Response(status=status.HTTP_204_NO_CONTENT)",
+        ]
+    },
+    "delete":{
+        "imports":[],
+        "lines":[
+            "def destroy(self, request):",
+            TAB*1+ "instance = self.model_class(data=request.data)",#GET OBJECT
+            TAB*1+ "instance.delete()",
+            TAB*1+ "return Response(status=status.HTTP_204_NO_CONTENT)",
+        ]
+    }
+}
 class ModelViews:
     model = None
     actions = []
     def __init__(self, model:Model) -> None:
         self.model = model
         self.actions = self.model.properties["__actions"] if "__actions" in self.model.properties else []
+    def add_action_to_view(self, new_action, lines, imports):
+        if new_action == "all":
+            for action in ACTIONS:
+                imports.extend(ACTIONS[action]["imports"])
+                lines.extend([TAB+x for x in ACTIONS[action]["lines"]])
+            return lines, imports
+        if new_action not in ACTIONS:
+            raise NameError(f"\"{new_action}\" is Not a valid Action")
+        imports.extend(ACTIONS[new_action]["imports"])
+        lines.extend([TAB+x for x in ACTIONS[new_action]["lines"]])
+        return lines, imports
     def render(self):
         lines = [
             f"class {self.model.name}ViewSet(viewsets.ViewSet):"
@@ -54,47 +95,6 @@ class ModelViews:
         ])
         for view in to_render:
             for action in to_render[view]:
-                if action == "list":
-                    lines.extend([
-                        "\t"*1+ "def list(self, request):",
-                        "\t"*2+ "queryset = self.model_class.objects.all()",
-                        "\t"*2+ "serializer = self.serializer_class(queryset, many=True)",
-                        "\t"*2+ "return Response(serializer.data)",
-                        ""
-                    ])
-                if action == "get":
-                    imports.append("from django.shortcuts import get_object_or_404")
-                    lines.extend([
-                        "\t"*1+ "def retrieve(self, request):",
-                        "\t"*2+ "queryset = self.model_class.objects.all()",
-                        "\t"*2+ "object = get_object_or_404(queryset, pk=pk)",
-                        "\t"*2+ "serializer = self.serializer_class(object)",
-                        "\t"*2+ "return Response(serializer.data)",
-                    ])
-                if action == "create":
-                    lines.extend([
-                        "\t"*1+ "def create(self, request):",
-                        "\t"*2+ "serializer = self.serializer_class(data=request.data)",
-                        "\t"*2+ "serializer.is_valid(raise_exception=True)",
-                        "\t"*2+ "serializer.save()",
-                        "\t"*2+ "return Response(serializer.data)",
-                    ])
-                if action == "update":
-                    imports.append("from rest_framework import status")
-                    lines.extend([
-                        "\t"*1+ "def update(self, request):",
-                        "\t"*2+ "instance = self.model_class(data=request.data)",#GET OBJECT
-                        "\t"*2+ "serializer = self.get_serializer(instance, data=request.data, partial=partial)",
-                        "\t"*2+ "serializer.is_valid(raise_exception=True)return Response(status=status.HTTP_204_NO_CONTENT)",
-                        "\t"*2+ "return Response(status=status.HTTP_204_NO_CONTENT)",
-                    ])
-                if action == "destroy":
-                    imports.append("from rest_framework import status")
-                    lines.extend([
-                        "\t"*1+ "def destroy(self, request):",
-                        "\t"*2+ "instance = self.model_class(data=request.data)",#GET OBJECT
-                        "\t"*2+ "instance.delete()",
-                        "\t"*2+ "return Response(status=status.HTTP_204_NO_CONTENT)",
-                    ])
+                lines, imports = self.add_action_to_view(action, lines, imports)
             #if action == "list":
         return lines, imports
