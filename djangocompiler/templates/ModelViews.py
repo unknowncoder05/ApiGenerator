@@ -11,48 +11,48 @@ ACTIONS = {
         "imports":[],
         "lines":[
             "def list(self, request):",
-            TAB*1+ "queryset = self.model_class.objects.all()",
-            TAB*1+ "serializer = self.serializer_class(queryset, many=True)",
-            TAB*1+ "return Response(serializer.data)",
+            TAB+ "queryset = self.model_class.objects.all()",
+            TAB+ "serializer = self.serializer_class(queryset, many=True)",
+            TAB+ "return Response(serializer.data)",
         ]
         },
     "get":{
         "imports":["from django.shortcuts import get_object_or_404"],
         "lines":[
             "def retrieve(self, request):",
-            TAB*1+ "queryset = self.model_class.objects.all()",
-            TAB*1+ "object = get_object_or_404(queryset, pk=pk)",
-            TAB*1+ "serializer = self.serializer_class(object)",
-            TAB*1+ "return Response(serializer.data)",
+            TAB+ "queryset = self.model_class.objects.all()",
+            TAB+ "object = get_object_or_404(queryset, pk=pk)",
+            TAB+ "serializer = self.serializer_class(object)",
+            TAB+ "return Response(serializer.data)",
         ]
     },
     "write":{
         "imports":[],
         "lines":[
             "def create(self, request):",
-            TAB*1+ "serializer = self.serializer_class(data=request.data)",
-            TAB*1+ "serializer.is_valid(raise_exception=True)",
-            TAB*1+ "serializer.save()",
-            TAB*1+ "return Response(serializer.data)",
+            TAB+ "serializer = self.serializer_class(data=request.data)",
+            TAB+ "serializer.is_valid(raise_exception=True)",
+            TAB+ "serializer.save()",
+            TAB+ "return Response(serializer.data)",
         ]
     },
     "update":{
         "imports":["from rest_framework import status"],
         "lines":[
             "def update(self, request):",
-            TAB*1+ "instance = self.model_class(data=request.data)",
-            TAB*1+ "serializer = self.get_serializer(instance, data=request.data, partial=partial)",
-            TAB*1+ "serializer.is_valid(raise_exception=True)return Response(status=status.HTTP_204_NO_CONTENT)",
-            TAB*1+ "return Response(status=status.HTTP_204_NO_CONTENT)",
+            TAB+ "instance = self.model_class(data=request.data)",
+            TAB+ "serializer = self.get_serializer(instance, data=request.data, partial=partial)",
+            TAB+ "serializer.is_valid(raise_exception=True)return Response(status=status.HTTP_204_NO_CONTENT)",
+            TAB+ "return Response(status=status.HTTP_204_NO_CONTENT)",
         ]
     },
     "delete":{
         "imports":[],
         "lines":[
             "def destroy(self, request):",
-            TAB*1+ "instance = self.model_class(data=request.data)",#GET OBJECT
-            TAB*1+ "instance.delete()",
-            TAB*1+ "return Response(status=status.HTTP_204_NO_CONTENT)",
+            TAB+ "instance = self.model_class(data=request.data)",#GET OBJECT
+            TAB+ "instance.delete()",
+            TAB+ "return Response(status=status.HTTP_204_NO_CONTENT)",
         ]
     }
 }
@@ -74,10 +74,6 @@ class ModelViews:
         lines.extend([TAB+x for x in ACTIONS[new_action]["lines"]])
         return lines, imports
     def render(self):
-        lines = [
-            f"class {self.model.name}ViewSet(viewsets.ViewSet):"
-            
-        ]
         imports = [
             f"from .models import {self.model.name}",
             f"from .serializers import {self.model.serializer.name}",
@@ -89,11 +85,12 @@ class ModelViews:
                 to_render[self.actions[action]] = [action]
             else:
                 to_render[self.actions[action]].append(action)
-        lines.extend([
-            "\t"*1+f"serializer_class = {self.model.serializer.name}",
-            "\t"*1+f"model_class = {self.model.name}"
-        ])
         for view in to_render:
+            lines.extend([
+                f"class {self.model.name}ViewSet(viewsets.ViewSet):",
+                TAB+f"serializer_class = {self.model.serializer.name}",
+                TAB+f"model_class = {self.model.name}"
+            ])
             for action in to_render[view]:
                 lines, imports = self.add_action_to_view(action, lines, imports)
             #if action == "list":

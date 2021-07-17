@@ -32,6 +32,7 @@
                 "get":"public",
                 "all":"__owner"
             },
+            "__serializer": ["owner","title","year","description","duration"],
             "__route":"movies",
             "__db": "maindb"
         }
